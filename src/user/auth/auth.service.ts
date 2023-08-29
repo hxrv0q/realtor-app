@@ -1,5 +1,5 @@
 import { ConflictException, HttpException, Injectable } from '@nestjs/common';
-import { UserType } from '@prisma/client';
+import { Prisma, UserType } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,8 +16,7 @@ export class AuthService {
     { email, name, phone, password }: SignUpParams,
     userType: UserType,
   ) {
-    const foundUser = await this.getUserByEmail(email);
-
+    const foundUser = await this.getUser({ email });
     if (foundUser) {
       throw new ConflictException('This email is already taken');
     }
@@ -32,14 +31,12 @@ export class AuthService {
   }
 
   async signIn({ email, password }: SignInParams) {
-    const user = await this.getUserByEmail(email);
-
+    const user = await this.getUser({ email });
     if (!user) {
       throw new HttpException('Invalid credentials', 401);
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       throw new HttpException('Invalid credentials', 401);
     }
@@ -49,7 +46,6 @@ export class AuthService {
 
   async generateProductKey(email: string, userType: UserType) {
     const productKey = this.getProductKey(email, userType);
-
     return await this.hash(productKey);
   }
 
@@ -70,10 +66,8 @@ export class AuthService {
     });
   }
 
-  private async getUserByEmail(email: string) {
-    return this.prismaService.user.findUnique({
-      where: { email },
-    });
+  private async getUser(where: Prisma.UserWhereUniqueInput) {
+    return this.prismaService.user.findUnique({ where });
   }
 
   private async hash(string: string) {
@@ -83,11 +77,9 @@ export class AuthService {
 
   private generateToken(payload: { name: string; id: number }) {
     const secret = process.env.JSON_SECRET_KEY;
-
     if (!secret) {
       throw new Error('JWT secret must be defined in environment variables');
     }
-
     return jwt.sign(payload, secret, { expiresIn: '7d' });
   }
 
