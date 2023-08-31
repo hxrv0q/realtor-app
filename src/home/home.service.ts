@@ -10,6 +10,22 @@ type CreateHomeParams = Omit<Prisma.HomeCreateInput, 'images' | 'realtor'> & {
 
 type UpdateHomeParams = Prisma.HomeUpdateInput;
 
+export const homeSelect = {
+  id: true,
+  address: true,
+  city: true,
+  price: true,
+  property_type: true,
+  number_of_bathrooms: true,
+  number_of_bedrooms: true,
+  images: {
+    select: {
+      url: true,
+    },
+    take: 1,
+  },
+};
+
 @Injectable()
 export class HomeService {
   constructor(private readonly prismaService: PrismaService) {}
@@ -17,19 +33,7 @@ export class HomeService {
   async getHomes(where: Prisma.HomeWhereInput): Promise<HomeResponseDto[]> {
     const homes = await this.prismaService.home.findMany({
       select: {
-        id: true,
-        address: true,
-        city: true,
-        price: true,
-        property_type: true,
-        number_of_bathrooms: true,
-        number_of_bedrooms: true,
-        images: {
-          select: {
-            url: true,
-          },
-          take: 1,
-        },
+        ...homeSelect,
       },
       where,
     });
@@ -163,6 +167,8 @@ export class HomeService {
         text: message,
       },
     });
+
+    return newMessage;
   }
 
   async getMessagesByHome(homeId: number) {
