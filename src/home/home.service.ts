@@ -39,7 +39,7 @@ export class HomeService {
     }
 
     return homes.map((home) => {
-      const newHome = { ...home, image: home.images[0].url };
+      const newHome = { ...home, image: home.images[0]?.url };
       delete newHome.images;
       return new HomeResponseDto(newHome);
     });
