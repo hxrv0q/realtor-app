@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { HomeService } from './home.service';
 import { CreateHomeDto, HomeResponseDto, UpdateHomeDto } from './dto/home.dto';
+import { User, UserInfo } from '../user/decorators/user.decorator';
 
 @Controller('home')
 export class HomeController {
@@ -48,14 +49,18 @@ export class HomeController {
   }
 
   @Post()
-  async createHome(@Body() body: CreateHomeDto): Promise<HomeResponseDto> {
-    return this.homeService.createHome(body);
+  async createHome(
+    @Body() body: CreateHomeDto,
+    @User() user: UserInfo,
+  ): Promise<HomeResponseDto> {
+    return this.homeService.createHome(body, user.id);
   }
 
   @Put(':id')
   async updateHome(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateHomeDto,
+    @User() user: UserInfo,
   ): Promise<HomeResponseDto> {
     return this.homeService.updateHome(body, id);
   }
