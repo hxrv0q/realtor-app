@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { HomeService } from './home.service';
 import { CreateHomeDto, HomeResponseDto, UpdateHomeDto } from './dto/home.dto';
@@ -62,11 +63,24 @@ export class HomeController {
     @Body() body: UpdateHomeDto,
     @User() user: UserInfo,
   ): Promise<HomeResponseDto> {
+    const realtor = await this.homeService.getRealtorByHome(id);
+    if (realtor.id !== user.id) {
+      throw new UnauthorizedException();
+    }
+
     return this.homeService.updateHome(body, id);
   }
 
   @Delete(':id')
-  async deleteHome(@Param('id', ParseIntPipe) id: number) {
+  async deleteHome(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: UserInfo,
+  ) {
+    const realtor = await this.homeService.getRealtorByHome(id);
+    if (realtor.id !== user.id) {
+      throw new UnauthorizedException();
+    }
+
     return this.homeService.deleteHome(id);
   }
 }
