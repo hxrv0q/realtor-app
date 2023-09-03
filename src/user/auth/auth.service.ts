@@ -2,7 +2,7 @@ import { ConflictException, HttpException, Injectable } from '@nestjs/common';
 import { Prisma, UserType } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { SignInDto, SignUpDto } from '../dtos/auth.dto';
 
 type SignUpParams = SignUpDto;
